@@ -1,0 +1,37 @@
+{
+  "name": "flowPipe",
+  "version": "1.0.0",
+  "description": "A helper function for creating type-safe generators for mobx-state-tree",
+  "main": "dist/index.js",
+  "repository": "https://github.com/mikecann/flowPipe.git",
+  "author": "Mike Cann <mike.cann@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "compile": "tsc --noEmit",
+    "barrel": "barrelsby --directory src --delete",
+    "build": "tsc",
+    "dev": "yarn concurrently -n build,test -c magenta,cyan  \"yarn build -w\" \"yarn test\"",
+    "test": "yarn unit",
+    "unit": "jest -c ./jest.config.js",
+    "pretty": "prettier --write ./src/**/*.{ts,tsx}"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged && yarn compile"
+    }
+  },
+  "devDependencies": {
+    "@types/jest": "^25.2.1",
+    "concurrently": "^5.2.0",
+    "husky": "^4.2.5",
+    "jest": "^26.0.1",
+    "prettier": "^2.0.5",
+    "pretty-quick": "^2.0.1",
+    "ts-jest": "^25.4.0",
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "mobx": "^5",
+    "mobx-state-tree": "^3"
+  }
+}
