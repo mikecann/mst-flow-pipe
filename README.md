@@ -32,7 +32,7 @@ This library attempts to solve that by borrowing the concept of piping from func
 
 The above code now becomes:
 
-```
+```typescript
 import { types } from "mobx-state-tree";
 import { flowPipe } from "./src";
 
@@ -53,7 +53,7 @@ const store = types.model({}).actions((self) => ({
 
 You can then chain together as many of these async steps as you wish. You can update the state mid-flow just fine:
 
-```
+```typescript
 import { types } from "mobx-state-tree";
 import { flowPipe } from "./src";
 
@@ -83,7 +83,7 @@ const User = types
 
 If you want handle errors, instead of passing functions to flowPipe pass an array of functions as the first arg and an error handler as the second arg. e.g.
 
-```
+```typescript
 import { types } from "mobx-state-tree";
 import { flowPipe } from "./src";
 
@@ -97,28 +97,31 @@ const User = types
     age: types.number,
   })
   .actions((self) => ({
-    action1: flowPipe([
-      (userId: string) =>
-        loadUserName(userId).then((name) => ({ name, userId })),
-      (result) => {
-        self.name = result.name;
-        return loadUserAge(result.userId);
-      },
-      // Note: we have to type "result" as number here, im not sure why, please open an issue if
-      // you know to fix it
-      (result: number) => {
-        self.age = result;
-      },
-    ], (error) => "could not load user, error: "+ error),
+    action1: flowPipe(
+      [
+        (userId: string) =>
+          loadUserName(userId).then((name) => ({ name, userId })),
+        (result) => {
+          self.name = result.name;
+          return loadUserAge(result.userId);
+        },
+        // Note: we have to type "result" as number here, im not sure why, please open an issue if
+        // you know to fix it
+        (result: number) => {
+          self.age = result;
+        },
+      ],
+      (error) => "could not load user, error: " + error
+    ),
   }));
 ```
 
 ## More Examples
 
-Checkout the tests for more examples of how to use this library
+Checkout [the tests](https://github.com/mikecann/flowPipe/blob/master/test/index.test.ts) for more examples of how to use this library
 
 ## Known issues
 
 Currently I have only added support for 5 steps in a flowPipe but its trivial to add more, please open a PR if you want more :)
 
-There is currently a known issue with circularly referenced promise types
+There is currently [a known issue](https://github.com/mikecann/flowPipe/blob/master/test/index.test.ts#L167) with the array at arg1 version of the function, if you know the solution please do open a PR or issue to discuss.
