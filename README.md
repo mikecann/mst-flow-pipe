@@ -1,4 +1,4 @@
-# FlowPipe
+# MST Flow Pipe
 
 This is a helper library for writing type-safe async code in MobX State Tree.
 
@@ -9,8 +9,7 @@ This is a helper library for writing type-safe async code in MobX State Tree.
 ```typescript
 import { types, onPatch, flow, IJsonPatch } from "mobx-state-tree";
 
-const doSomethingAsync = (input: number) =>
-  Promise.resolve("this is the result");
+const doSomethingAsync = (input: number) => Promise.resolve("this is the result");
 
 const store = types.model({}).actions((self) => ({
   // the type of this function is correct:
@@ -36,8 +35,7 @@ The above code now becomes:
 import { types } from "mobx-state-tree";
 import { flowPipe } from "mst-flow-pipe";
 
-const doSomethingAsync = (input: number) =>
-  Promise.resolve("this is the result");
+const doSomethingAsync = (input: number) => Promise.resolve("this is the result");
 
 const store = types.model({}).actions((self) => ({
   // the type of this function is still correct:
@@ -68,8 +66,7 @@ const User = types
   })
   .actions((self) => ({
     action1: flowPipe(
-      (userId: string) =>
-        loadUserName(userId).then((name) => ({ name, userId })),
+      (userId: string) => loadUserName(userId).then((name) => ({ name, userId })),
       (result) => {
         self.name = result.name;
         return loadUserAge(result.userId);
@@ -99,8 +96,7 @@ const User = types
   .actions((self) => ({
     action1: flowPipe(
       [
-        (userId: string) =>
-          loadUserName(userId).then((name) => ({ name, userId })),
+        (userId: string) => loadUserName(userId).then((name) => ({ name, userId })),
         (result) => {
           self.name = result.name;
           return loadUserAge(result.userId);

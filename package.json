@@ -1,8 +1,9 @@
 {
   "name": "mst-flow-pipe",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A helper function for creating type-safe generators for mobx-state-tree",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "repository": "https://github.com/mikecann/flowPipe.git",
   "author": "Mike Cann <mike.cann@gmail.com>",
   "license": "MIT",
