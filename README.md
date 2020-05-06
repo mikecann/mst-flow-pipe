@@ -34,7 +34,7 @@ The above code now becomes:
 
 ```typescript
 import { types } from "mobx-state-tree";
-import { flowPipe } from "./src";
+import { flowPipe } from "mst-flow-pipe";
 
 const doSomethingAsync = (input: number) =>
   Promise.resolve("this is the result");
@@ -55,7 +55,7 @@ You can then chain together as many of these async steps as you wish. You can up
 
 ```typescript
 import { types } from "mobx-state-tree";
-import { flowPipe } from "./src";
+import { flowPipe } from "mst-flow-pipe";
 
 const loadUserName = (userId: string) => Promise.resolve("mike");
 
@@ -85,7 +85,7 @@ If you want handle errors, instead of passing functions to flowPipe pass an arra
 
 ```typescript
 import { types } from "mobx-state-tree";
-import { flowPipe } from "./src";
+import { flowPipe } from "mst-flow-pipe";
 
 const loadUserName = (userId: string) => Promise.resolve("mike");
 
