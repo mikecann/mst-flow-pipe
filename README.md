@@ -13,7 +13,7 @@ const doSomethingAsync = (input: number) => Promise.resolve("this is the result"
 
 const store = types.model({}).actions((self) => ({
   // the type of this function is correct:
-  // number -> Promise<"string">
+  // number -> Promise<string>
 
   action1: flow(function* (input: number) {
     // Unfortunately "result" here is typed as any
