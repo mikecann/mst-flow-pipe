@@ -14,6 +14,7 @@ const doSomethingAsync = (input: number) => Promise.resolve("this is the result"
 const store = types.model({}).actions((self) => ({
   // the type of this function is correct:
   // number -> Promise<"string">
+
   action1: flow(function* (input: number) {
     // Unfortunately "result" here is typed as any
     const result = yield doSomethingAsync(input);
@@ -39,7 +40,8 @@ const doSomethingAsync = (input: number) => Promise.resolve("this is the result"
 
 const store = types.model({}).actions((self) => ({
   // the type of this function is still correct:
-  // number -> Promise<"string">
+  // number -> Promise<string>
+
   action1: flowPipe(
     (input: number) => doSomethingAsync(input),
 
@@ -101,8 +103,10 @@ const User = types
           self.name = result.name;
           return loadUserAge(result.userId);
         },
+
         // Note: we have to type "result" as number here, im not sure why, please open an issue if
         // you know to fix it
+
         (result: number) => {
           self.age = result;
         },
