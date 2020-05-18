@@ -142,6 +142,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <table>
   <tr>
     <td align="center"><a href="http://www.mikecann.co.uk"><img src="https://avatars3.githubusercontent.com/u/215033?v=4" width="100px;" alt=""/><br /><sub><b>Mike Cann</b></sub></a><br /><a href="https://github.com/mikecann/mst-flow-pipe/commits?author=mikecann" title="Code">💻</a></td>
+    <td align="center"><a href="https://lorefnon.tech/"><img src="https://avatars1.githubusercontent.com/u/1449492?v=4" width="100px;" alt=""/><br /><sub><b>Lorefnon</b></sub></a><br /><a href="https://github.com/mikecann/mst-flow-pipe/commits?author=lorefnon" title="Code">💻</a></td>
   </tr>
 </table>
 
