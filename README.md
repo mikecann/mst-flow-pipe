@@ -12,11 +12,8 @@ import { types, onPatch, flow, IJsonPatch } from "mobx-state-tree";
 const doSomethingAsync = (input: number) => Promise.resolve("this is the result");
 
 const store = types.model({}).actions((self) => ({
-  // the type of this function is correct:
-  // number -> Promise<string>
-
   action1: flow(function* (input: number) {
-    // Unfortunately "result" here is typed as any
+    // Unfortunately "result" here is typed as "any" instead of "string"
     const result = yield doSomethingAsync(input);
 
     return "result: " + result;
@@ -28,7 +25,7 @@ This makes it awkward to use as you have to manually type the return of every yi
 
 ## The Solution
 
-This library attempts to solve that by borrowing the concept of piping from functional code.
+This library attempts to solve the issue by converting the flow in a series of piped functions.
 
 The above code now becomes:
 
@@ -39,15 +36,14 @@ import { flowPipe } from "mst-flow-pipe";
 const doSomethingAsync = (input: number) => Promise.resolve("this is the result");
 
 const store = types.model({}).actions((self) => ({
-  // the type of this function is still correct:
-  // number -> Promise<string>
+  // We type the input to the flow as number
 
-  action1: flowPipe(
-    (input: number) => doSomethingAsync(input),
-
+  action1: flowPipe((input: number) => doSomethingAsync(input))
     // Result here is now correctly typed as "string"
-    (result) => "result: " + result
-  ),
+    .then((result) => "result: " + result)
+
+    // Note, we must also "end" the flow
+    .end(),
 }));
 ```
 
@@ -68,19 +64,30 @@ const User = types
   })
   .actions((self) => ({
     action1: flowPipe(
-      (userId: string) => loadUserName(userId).then((name) => ({ name, userId })),
-      (result) => {
+      // We load the user name
+      (userId: string) =>
+        loadUserName(userId)
+          // We also need the userId in the next step of the flow so we "map" the result of
+          // this async step into the next step of the flow
+          .then((name) => ({ name, userId }))
+    )
+      .then((result) => {
+        // We can now safely set the name on the model because we are now in an "action"
         self.name = result.name;
+
+        // We can then continue the flow with another async step
         return loadUserAge(result.userId);
-      },
-      (result) => {
+      })
+      .then((result) => {
         self.age = result;
-      }
-    ),
+      })
+
+      // End the flow to return a valid action
+      .end(),
   }));
 ```
 
-If you want handle errors, instead of passing functions to flowPipe pass an array of functions as the first arg and an error handler as the second arg. e.g.
+If you want handle errors during the flow you can do that using the `catch` method.
 
 ```typescript
 import { types } from "mobx-state-tree";
@@ -90,38 +97,37 @@ const loadUserName = (userId: string) => Promise.resolve("mike");
 
 const loadUserAge = (userId: string) => Promise.resolve(36);
 
+const reportErrorToServer = (err: Error) => Promise.resolve(err);
+
 const User = types
   .model({
     name: types.string,
     age: types.number,
   })
   .actions((self) => ({
-    action1: flowPipe(
-      [
-        (userId: string) => loadUserName(userId).then((name) => ({ name, userId })),
-        (result) => {
-          self.name = result.name;
-          return loadUserAge(result.userId);
-        },
+    // The type of this function is:
+    // `(userId: string) => Promise<number | "error reported to server">`
 
-        // Note: we have to type "result" as number here, im not sure why, please open an issue if
-        // you know to fix it
+    action1: flowPipe((userId: string) => loadUserName(userId).then((name) => ({ name, userId })))
+      .then((result) => {
+        self.name = result.name;
+        return loadUserAge(result.userId);
+      })
+      .then((result: number) => {
+        self.age = result;
+        return result;
+      })
 
-        (result: number) => {
-          self.age = result;
-        },
-      ],
-      (error) => "could not load user, error: " + error
-    ),
+      // If any of the above steps error then we can catch then and continue on
+      .catch((error) => reportErrorToServer(new Error("could not load user, error: " + error)))
+
+      // The type of result is now "number" or "Error"
+      .then((result) => (result instanceof Error ? "error reported to server" : result))
+
+      .end(),
   }));
 ```
 
 ## More Examples
 
 Checkout [the tests](https://github.com/mikecann/flowPipe/blob/master/test/index.test.ts) for more examples of how to use this library
-
-## Known issues
-
-Currently I have only added support for 5 steps in a flowPipe but its trivial to add more, please open a PR if you want more :)
-
-There is currently [a known issue](https://github.com/mikecann/flowPipe/blob/master/test/index.test.ts#L167) with the array at arg1 version of the function, if you know the solution please do open a PR or issue to discuss.

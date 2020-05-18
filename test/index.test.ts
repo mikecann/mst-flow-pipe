@@ -54,7 +54,7 @@ it("allows modification the model mid-flow", async () => {
           self.setValue(next + "");
           return Promise.resolve(next + 100);
         })
-        .end()
+        .end(),
     }))
     .create({});
 
@@ -93,7 +93,7 @@ it("returns errors as promise rejections", async () => {
           return num + 100;
         })
         .then((num) => Promise.resolve(num + ""))
-        .end()
+        .end(),
     }))
     .create({});
 
@@ -113,7 +113,7 @@ it("can optionally handle errors", async () => {
         .catch((err) => {
           return "something bad happened";
         })
-        .end()
+        .end(),
     }))
     .create({});
 
@@ -133,11 +133,29 @@ it("can optionally handle errors with no input", async () => {
         .catch((err) => {
           return "oopsie";
         })
-        .end()
+        .end(),
     }))
     .create({});
 
   await expect(store.action1()).resolves.toBe("oopsie");
+});
+
+it("can continue on after and error has been caught", async () => {
+  const reportErrorToServer = (err: Error) => Promise.resolve(err);
+
+  const store = types
+    .model({})
+    .actions((self) => ({
+      action1: flowPipe((input: number) => Promise.resolve(input))
+        .then((num) => (num > 100 ? Promise.reject("naa") : num + 100))
+        .catch((err) => reportErrorToServer(new Error("something bad happened")))
+        .then((result) => (result instanceof Error ? "error reported to server" : result))
+        .end(),
+    }))
+    .create({});
+
+  await expect(store.action1(99)).resolves.toBe(199);
+  await expect(store.action1(101)).resolves.toBe("error reported to server");
 });
 
 it("can nest flow functions", async () => {
@@ -150,7 +168,7 @@ it("can nest flow functions", async () => {
       action2: flowPipe((input: number) => Promise.resolve(input + 10))
         .then((next) => self.action1(next + 10))
         .then((next) => next + "")
-        .end()
+        .end(),
     }))
     .create({});
 
