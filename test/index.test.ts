@@ -1,16 +1,15 @@
-import { flowPipe, FlowFn } from "../src/index";
+import { flowPipe } from "../src/index";
 import { types, onPatch, IJsonPatch } from "mobx-state-tree";
 
 it("returns the last resolved value from the pipe", async () => {
   const store = types
     .model({})
     .actions((self) => ({
-      action1: flowPipe(() => 123),
-      action2: flowPipe(() => Promise.resolve("456")),
-      action3: flowPipe(
-        () => Promise.resolve("456"),
-        (x) => Promise.resolve(x + "789")
-      ),
+      action1: flowPipe(() => 123).end(),
+      action2: flowPipe(() => Promise.resolve("456")).end(),
+      action3: flowPipe(() => Promise.resolve("456"))
+        .then((x) => Promise.resolve(x + "789"))
+        .end(),
     }))
     .create({});
 
@@ -23,13 +22,12 @@ it("can take an initial typed input", async () => {
   const store = types
     .model({})
     .actions((self) => ({
-      action1: flowPipe((input: string) => "hello " + input),
-      action2: flowPipe(
-        (input: number) => Promise.resolve(input),
-        (next) => next + 100,
-        (next) => Promise.resolve(next + 100),
-        (next) => Promise.resolve(next + "")
-      ),
+      action1: flowPipe((input: string) => "hello " + input).end(),
+      action2: flowPipe((input: number) => Promise.resolve(input))
+        .then((next) => next + 100)
+        .then((next) => Promise.resolve(next + 100))
+        .then((next) => Promise.resolve(next + ""))
+        .end(),
     }))
     .create({});
 
@@ -48,16 +46,15 @@ it("allows modification the model mid-flow", async () => {
       },
     }))
     .actions((self) => ({
-      action1: flowPipe(
-        (input: number) => {
-          self.value = input + "";
-          return input + 100;
-        },
-        (next) => {
+      action1: flowPipe((input: number) => {
+        self.value = input + "";
+        return input + 100;
+      })
+        .then((next) => {
           self.setValue(next + "");
           return Promise.resolve(next + 100);
-        }
-      ),
+        })
+        .end(),
     }))
     .create({});
 
@@ -86,19 +83,17 @@ it("returns errors as promise rejections", async () => {
   const store = types
     .model({})
     .actions((self) => ({
-      action1: flowPipe(
-        (input: number) => Promise.resolve(input),
-        (num) => (num > 100 ? Promise.reject("naa") : num + 100),
-        (num) => Promise.resolve(num + "")
-      ),
-      action2: flowPipe(
-        (input: number) => Promise.resolve(input),
-        (num) => {
+      action1: flowPipe((input: number) => Promise.resolve(input))
+        .then((num) => (num > 100 ? Promise.reject("naa") : num + 100))
+        .then((num) => Promise.resolve(num + ""))
+        .end(),
+      action2: flowPipe((input: number) => Promise.resolve(input))
+        .then((num) => {
           if (num > 100) throw new Error("nope");
           return num + 100;
-        },
-        (num) => Promise.resolve(num + "")
-      ),
+        })
+        .then((num) => Promise.resolve(num + ""))
+        .end(),
     }))
     .create({});
 
@@ -113,15 +108,12 @@ it("can optionally handle errors", async () => {
   const store = types
     .model({})
     .actions((self) => ({
-      action1: flowPipe(
-        [
-          (input: number) => Promise.resolve(input),
-          (num) => (num > 100 ? Promise.reject("naa") : num + 100),
-        ],
-        (err) => {
+      action1: flowPipe((input: number) => Promise.resolve(input))
+        .then((num) => (num > 100 ? Promise.reject("naa") : num + 100))
+        .catch((err) => {
           return "something bad happened";
-        }
-      ),
+        })
+        .end(),
     }))
     .create({});
 
@@ -133,39 +125,50 @@ it("can optionally handle errors with no input", async () => {
   const store = types
     .model({})
     .actions((self) => ({
-      action1: flowPipe(
-        [
-          () => Promise.resolve({ a: "anon", b: 123 }),
-          (o) => {
-            if (o.b < 9999) throw new Error("oops");
-            return o.b;
-          },
-        ],
-        (err) => {
+      action1: flowPipe(() => Promise.resolve({ a: "anon", b: 123 }))
+        .then((o) => {
+          if (o.b < 9999) throw new Error("oops");
+          return o.b;
+        })
+        .catch((err) => {
           return "oopsie";
-        }
-      ),
+        })
+        .end(),
     }))
     .create({});
 
   await expect(store.action1()).resolves.toBe("oopsie");
 });
 
+it("can continue on after and error has been caught", async () => {
+  const reportErrorToServer = (err: Error) => Promise.resolve(err);
+
+  const store = types
+    .model({})
+    .actions((self) => ({
+      action1: flowPipe((input: number) => Promise.resolve(input))
+        .then((num) => (num > 100 ? Promise.reject("naa") : num + 100))
+        .catch((err) => reportErrorToServer(new Error("something bad happened")))
+        .then((result) => (result instanceof Error ? "error reported to server" : result))
+        .end(),
+    }))
+    .create({});
+
+  await expect(store.action1(99)).resolves.toBe(199);
+  await expect(store.action1(101)).resolves.toBe("error reported to server");
+});
+
 it("can nest flow functions", async () => {
   const store = types
     .model({})
     .actions((self) => ({
-      action1: flowPipe((input: number) => Promise.resolve(input + 100)),
+      action1: flowPipe((input: number) => Promise.resolve(input + 100)).end(),
     }))
     .actions((self) => ({
-      action2: flowPipe([
-        (input: number) => Promise.resolve(input + 10),
-        (next) => self.action1(next + 10),
-
-        // Todo: work out why next here is typed at "unknown", if you forcefully type it to number
-        // its happy and string its not happy so thats good, but it should auto-type to number
-        (next) => next + "",
-      ]),
+      action2: flowPipe((input: number) => Promise.resolve(input + 10))
+        .then((next) => self.action1(next + 10))
+        .then((next) => next + "")
+        .end(),
     }))
     .create({});
 

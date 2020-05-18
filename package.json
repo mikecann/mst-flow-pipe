@@ -1,6 +1,6 @@
 {
   "name": "mst-flow-pipe",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "A helper function for creating type-safe generators for mobx-state-tree",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
