@@ -1,0 +1,34 @@
+{
+  "projectName": "mst-flow-pipe",
+  "projectOwner": "mikecann",
+  "repoType": "github",
+  "files": [
+    "README.md"
+  ],
+  "contributors": [
+    {
+      "login": "mikecann",
+      "name": "Mike Cann",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/215033?s=88&u=cd5c513ae150c1b33ea2e5f821881f6ffcbed112&v=4",
+      "profile": "https://mikecann.co.uk",
+      "contributions": [
+        "code",
+        "doc",
+        "ideas",
+        "test"
+      ]
+    },
+    {
+      "login": "lorefnon",
+      "name": "Lorefnon",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/1449492?s=88&v=4",
+      "profile": "https://lorefnon.tech",
+      "contributions": [
+        "code",
+        "ideas",
+        "test"
+      ]
+    },    
+  ],
+  "commitConvention": "none"
+}
