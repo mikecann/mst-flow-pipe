@@ -131,3 +131,23 @@ const User = types
 ## More Examples
 
 Checkout [the tests](https://github.com/mikecann/flowPipe/blob/master/test/index.test.ts) for more examples of how to use this library
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="http://www.mikecann.co.uk"><img src="https://avatars3.githubusercontent.com/u/215033?v=4" width="100px;" alt=""/><br /><sub><b>Mike Cann</b></sub></a><br /><a href="https://github.com/mikecann/mst-flow-pipe/commits?author=mikecann" title="Code">💻</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-enable -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
